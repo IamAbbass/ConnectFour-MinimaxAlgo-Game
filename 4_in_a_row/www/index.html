@@ -1,0 +1,509 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>4 in a row (A.I Project)</title>
+<style>
+	*{
+		margin:0;
+		padding:0;	
+	}
+	body{
+		background-image: -webkit-radial-gradient(50% 100%, #ffffff, #999999);
+		background-image: -moz-radial-gradient(50% 100%, #ffffff, #999999);
+		background-image: -o-radial-gradient(50% 100%, #ffffff, #999999);
+		background-image: -ms-radial-gradient(50% 100%, #ffffff, #999999);
+		background-image: radial-gradient(50% 100%, #ffffff, #999999);
+		background-image: radial-gradient(50% 100%, #ffffff, #999999);
+	}
+	.main {
+		border: 5px solid #a2a2a2;
+		border-radius: 25px;
+		box-shadow: 0 0 10px #a2a2a2;
+		margin: 10px auto 0;
+		padding: 20px;
+		width: 500px;
+	}
+	.board{
+		width:100%;
+		border-collapse:collapse;
+		cursor:pointer;
+		margin-top:2px;
+		box-shadow: 0 0 5px #a2a2a2;
+	}
+	tr{
+		height:64px;
+		border:1px solid #a2a2a2;
+	}
+	td{
+		border:1px solid #a2a2a2;
+		background:#fff;
+	}
+	h1, p{
+		text-align:center;
+		text-transform:uppercase;
+	}
+	.empty{
+	
+	}
+	.player_coin{
+		background-image: url(img/player_coin.jpg);
+	}
+	.player_coin_win{
+		background-image:url(img/player_win_coin.jpg)
+	}
+	.cpu_coin{
+		background-image: url(img/cpu_coin.jpg);
+	}
+	.cpu_coin_win{
+		background-image:url(img/cpu_win_coin.jpg)
+	}
+	.player_coin, .player_coin_win, .cpu_coin, .cpu_coin_win{
+		background-position:center;
+		background-size:contain;
+		background-repeat:no-repeat;
+	}
+	.screen {
+		
+	}
+	
+	.player {
+		float: left;
+	}
+	.cpu{
+		float:right;	
+	}
+	.cpu, .player {
+		background-color: #fff;
+		box-shadow: 0 0 5px #aaa;
+		font-size: 24px;
+		height: 50px;
+		line-height: 100%;
+		border-radius:15px;
+		padding: 1%;
+		text-align: center;
+		width: 30%;
+	}
+	.blur{
+		opacity:0.25;	
+	}
+	.restart {
+		cursor: pointer;
+		float: left;
+		font-size: 18px;
+		height: 100%;
+		width: 28%;
+		height:50px;
+		margin:0 4%
+	}	
+	.player .coin{
+		background-image: url(img/player_coin.jpg);
+	}
+	.cpu .coin{
+		background-image: url(img/cpu_coin.jpg);
+	}
+	.player .coin, .cpu .coin {
+		background-position: center center;
+		background-repeat: no-repeat;
+		background-size: contain;
+		float: left;
+		height: 100%;
+		width: 40%;
+	}
+	.player .score{
+		
+	}
+	.cpu .score{
+		
+	}
+	.player .score, .cpu .score {
+		float: right;
+		font-family: Helvetica;
+		width: 60%;
+	}
+</style>
+<script src="js/jquery.min.js" type="text/javascript"></script>
+<script>
+	var game_running	= null;
+	var player_turn		= null;
+	
+	//for_testing
+	var show_val = false;
+	
+	function generate_board(){
+		for(y=6;y>=1;y--){
+			$(".board").append("<tr id='row_"+y+"'></tr>");
+			for(x=1;x<=7;x++)
+			{
+				$("#row_"+y+"").append("<td id='x"+x+"_y"+y+"' class='empty'></td>");	
+			}
+		}	
+	}
+	
+	function restart_game(){
+		$("td").text("");
+		$("td").removeAttr("class").addClass("empty");
+		start_game();
+	}
+	
+	function start_game(){
+		game_running	= true;
+		zero_or_one		= Math.round((Math.random() * 1));
+				
+		if(zero_or_one == 0)
+		{
+			$(".cpu").addClass("blur");
+			$(".player").removeClass("blur");
+			player_turn = true;
+		}
+		else if(zero_or_one == 1)
+		{
+			$(".player").addClass("blur");
+			$(".cpu").removeClass("blur");
+			player_turn = false;
+			cpu_move();	
+		}
+	}
+	
+	function check_win_state(coin)
+	{
+	
+		var win = false;
+		var win_pattern = [];
+		
+		//check for x match
+		for(y=1;y<=6;y++)
+		{
+			for(x=1;x<=4;x++)
+			{	
+				if(	$("#x"+x+"_y"+y).hasClass(coin) &&
+					$("#x"+(x+1)+"_y"+y).hasClass(coin) &&
+					$("#x"+(x+2)+"_y"+y).hasClass(coin) &&
+					$("#x"+(x+3)+"_y"+y).hasClass(coin))
+				{
+					win_pattern = ["#x"+x+"_y"+y,"#x"+(x+1)+"_y"+y,"#x"+(x+2)+"_y"+y,"#x"+(x+3)+"_y"+y];
+					win = true;						
+				}
+			}
+		}
+			
+		//check for y match 
+		if(win == false)
+		{
+			for(x=1;x<=7;x++)
+			{
+				for(y=1;y<=3;y++)
+				{	
+					if(	$("#x"+x+"_y"+y).hasClass(coin) &&
+						$("#x"+x+"_y"+(y+1)).hasClass(coin) &&
+						$("#x"+x+"_y"+(y+2)).hasClass(coin) &&
+						$("#x"+x+"_y"+(y+3)).hasClass(coin))
+					{
+						win_pattern = ["#x"+x+"_y"+y,"#x"+x+"_y"+(y+1),"#x"+x+"_y"+(y+2),"#x"+x+"_y"+(y+3)];
+						win = true;
+					}
+				}
+			}
+		}
+			
+		//check for [/] match
+		if(win == false)
+		{
+			for(y=1;y<=3;y++)
+			{
+				for(x=1;x<=4;x++)
+				{
+					if(	$("#x"+x+"_y"+y).hasClass(coin) &&
+						$("#x"+(x+1)+"_y"+(y+1)).hasClass(coin) &&
+						$("#x"+(x+2)+"_y"+(y+2)).hasClass(coin) &&
+						$("#x"+(x+3)+"_y"+(y+3)).hasClass(coin))
+					{
+						win_pattern = ["#x"+x+"_y"+y,"#x"+(x+1)+"_y"+(y+1),"#x"+(x+2)+"_y"+(y+2),"#x"+(x+3)+"_y"+(y+3)];
+						win = true;
+					}
+				}
+			}
+		}
+			
+			
+		//check for [\] match
+		if(win == false)
+		{
+			for(y=1;y<=3;y++)
+			{
+				for(x=7;x>=4;x--)
+				{	
+					if(	$("#x"+x+"_y"+y).hasClass(coin) &&
+						$("#x"+(x-1)+"_y"+(y+1)).hasClass(coin) &&
+						$("#x"+(x-2)+"_y"+(y+2)).hasClass(coin) &&
+						$("#x"+(x-3)+"_y"+(y+3)).hasClass(coin))
+					{
+						win_pattern = ["#x"+x+"_y"+y,"#x"+(x-1)+"_y"+(y+1),"#x"+(x-2)+"_y"+(y+2),"#x"+(x-3)+"_y"+(y+3)];
+						win = true;
+					}
+				}
+			}
+		}
+		
+		if(win == true)
+		{
+			for(i=0;i<win_pattern.length;i++)
+			{
+				$(win_pattern[i]).removeClass(coin).addClass(coin+"_win").fadeTo(250, 0.25).fadeTo(500, 1);
+				game_running=false;
+			} 
+		}
+		else if(!$("td.empty").length)
+		{
+			alert("It is a draw");
+			restart_game();
+		}
+	}
+	
+	function find_cpu_best_move(){
+			var best_move = 0;
+			
+			var move_value = [];
+			for(i=0;i<=7;i++)
+				move_value[i] = 0;
+						
+			// move value fr each possible value
+			var possible_move_y = [];
+			for(i=0;i<=7;i++)
+				possible_move_y[i] = -1;
+				
+			for(x=1;x<=7;x++)
+			{
+				for(y=1;y<=6;y++)
+				{
+					if($("#x"+x+"_y"+y).hasClass("empty"))
+					{
+						possible_move_y[x]=y;
+						break;
+					}
+				}
+			}			
+			
+						
+			for(x=1 ; x<possible_move_y.length ; x++)
+			{				
+				var all_match_count 	= 0;
+				var match_count_cpu		= 0;
+				var match_count_player	= 0;
+				
+				if (possible_move_y[x] > 0)
+				{
+					for(way=0;way<=6;way++)
+					{
+						match_count_player	=0;
+						match_count_cpu		=0;
+						
+						for(match_check=1;match_check<=3;match_check++)
+						{
+							var y = possible_move_y[x];
+							
+							var way_array = ["#x"+(x+match_check)+"_y"+(y+match_check),
+											"#x"+(x+match_check)+"_y"+y,
+											"#x"+(x+match_check)+"_y"+(y-match_check),
+											"#x"+x+"_y"+(y-match_check),
+											"#x"+(x-match_check)+"_y"+(y-match_check),
+											"#x"+(x-match_check)+"_y"+y,
+											"#x"+(x-match_check)+"_y"+(y+match_check)];	
+							if($(way_array[way]).length)
+							{							
+								if($(way_array[way]).hasClass("cpu_coin"))
+								{
+									if(match_count_player == 0)
+									{	
+										all_match_count++;
+										match_count_cpu++;
+									}
+								}
+								else if($(way_array[way]).hasClass("player_coin"))
+								{									
+									match_count_player++;
+								}
+								else
+								{
+									break;	
+								}
+							}
+							else
+							{
+								break;	
+							}
+						}
+						if(match_count_player == 2 || match_count_cpu == 2)
+						{	
+							all_match_count+=3;
+						}						
+						else if(match_count_player == 3 || match_count_cpu == 3)
+						{	
+							all_match_count+=6;
+						}
+						
+					}	
+					move_value[x]=all_match_count;
+					
+					// move value show
+					//$("#x"+x+"_y"+y).text(move_value[x]);
+					
+					
+				}
+				else // if move not exists
+				{
+					break;	
+				}
+			}
+			
+			
+			
+			var best_move_value=-1;
+			var sum=0;
+			//var search_style = [4,2,6,3,5,1,7];
+			
+			for(i=1;i<=7;i++)
+			{
+				sum+=move_value[i];					
+				
+				if(show_val == true)
+					$("#x"+i+"_y"+possible_move_y[i]).text(move_value[i]);
+				
+				if(move_value[i] >= best_move_value)
+				{
+					best_move_value= move_value[i];
+					best_move = i;
+				}
+			}
+			
+			//alert(move_value);
+			
+			//reset
+			for(i=0;i<=7;i++)
+				move_value[i] = 0;
+			
+			if(sum == 0)
+				best_move = 4;
+			
+			return best_move;			
+	}
+		
+	function cpu_move(){
+		if(game_running == true)
+		{
+			player_turn=false;
+			var comp_x 	= find_cpu_best_move();
+			var comp_y 	= null;	
+					
+			for(y=1;y<=6;y++)
+			{
+				if($("#x"+comp_x+"_y"+y).hasClass("empty"))
+				{
+					comp_y = y;
+					break;
+				}
+			}
+			if(comp_y == null)
+			{
+				cpu_move();	
+			}
+			else
+			{
+				y=6;
+				var drop = setInterval(function(){					
+					$("#x"+comp_x+"_y"+(y+1)).removeClass("cpu_coin").addClass("empty");
+					$("#x"+comp_x+"_y"+y).removeClass("empty").addClass("cpu_coin");
+					y--;
+					
+					if((y+1) == comp_y)
+					{						
+						check_win_state("cpu_coin");
+						player_turn=true;
+						$(".player").removeClass("blur");
+						$(".cpu").addClass("blur");
+						clearInterval(drop);
+					}
+				},100);
+			}			
+		}
+	}
+	
+	
+	$(document).ready(function(e) {
+		generate_board();
+		start_game();
+		
+		$(".restart").click(function(){
+			restart_game();
+		});
+		
+		
+		
+		//player_move
+		var player_coin_droped = true;		
+		
+		$("td").click(function(){			
+			if(player_turn==true && game_running == true && player_coin_droped == true)
+			{
+				player_coin_droped = false;
+				var id		 	= $(this).attr("id");
+				var pos_x		= id.substring(1,2);
+				var move 		= false;
+				var pos_y		= null;
+				
+				for(y=1;y<=6;y++)
+				{
+					if($("#x"+pos_x+"_y"+y).hasClass("empty"))
+					{
+						pos_y = y;
+						break;
+					}
+				}
+				if(pos_y == null)
+				{
+					alert("Illegal move, try again!");	
+					player_coin_droped = true;
+				}
+				else
+				{
+					y=6;
+					var drop = setInterval(function(){					
+						$("#x"+pos_x+"_y"+(y+1)).removeClass("player_coin").addClass("empty");
+						$("#x"+pos_x+"_y"+y).removeClass("empty").addClass("player_coin");
+						y--;
+						if((y+1) == pos_y)
+						{						
+							check_win_state("player_coin");
+							player_turn=true;
+							$(".cpu").removeClass("blur");
+							$(".player").addClass("blur");
+							clearInterval(drop);
+							player_coin_droped = true;
+							cpu_move();
+						}
+					},100);
+				}				
+			}			
+		});		
+    });
+	
+</script>
+</head>
+<body>
+	<div class="main">
+    	<h1>4 in a row</h1>
+        <p>place four coing together in any direction to win</p>
+        <hr>
+        <br>
+        <div class="screen">
+        	<div class="player"><div class="coin"></div><div class="score">YOU<br>0</div></div>
+            <div class="cpu"><div class="coin"></div><div class="score">CPU<br>0</div></div>
+            <button class="restart">RESTART</button>
+            <div style="clear:both"></div>
+        
+        <table class="board"></table>
+        
+        <div style="clear:both"></div>
+    </div>
+</body>
+</html>
