@@ -1,6 +1,5 @@
-Connect Four - HTML, CSS, and JavaScript Implementation with Minimax Algorithm
+# Connect Four - HTML, CSS, and JavaScript Implementation with Minimax Algorithm
 
-# Content:
 Are you looking for an exciting game that challenges your strategic thinking? Look no further! Introducing my latest project, "Connect Four," a popular two-player board game implemented using HTML, CSS, and JavaScript, powered by the formidable Minimax algorithm.
 
 # Overview:
